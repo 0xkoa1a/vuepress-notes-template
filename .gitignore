@@ -1,0 +1,8 @@
+.DS_Store
+
+# VuePress dependencies, caches, and output
+node_modules/
+_site/
+notes/.vuepress/.cache/
+notes/.vuepress/.temp/
+pnpm-debug.log*

@@ -1,0 +1,17 @@
+:root {
+  --diagram-primary: #2369d8;
+  --diagram-secondary: #6f42c1;
+  --diagram-success: #0f8277;
+  --diagram-warning: #c45a18;
+  --diagram-line: #c2c2c4;
+  --diagram-muted: #60646c;
+}
+
+[data-theme="dark"] {
+  --diagram-primary: #78a9ff;
+  --diagram-secondary: #b08cff;
+  --diagram-success: #57c7b7;
+  --diagram-warning: #f0a06a;
+  --diagram-line: #525257;
+  --diagram-muted: #a8a8ad;
+}
