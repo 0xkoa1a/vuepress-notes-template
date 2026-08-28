@@ -6,7 +6,8 @@
   "scripts": {
     "docs:dev": "vuepress dev notes --host 127.0.0.1",
     "docs:build": "vuepress build notes",
-    "docs:clean-dev": "vuepress dev notes --host 127.0.0.1 --clean-cache --clean-temp"
+    "docs:clean-dev": "vuepress dev notes --host 127.0.0.1 --clean-cache --clean-temp",
+    "export:page": "node scripts/export-page.mjs"
   },
   "engines": {
     "node": "^22.18.0"

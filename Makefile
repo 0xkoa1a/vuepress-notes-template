@@ -1,4 +1,4 @@
-.PHONY: help check install render preview clean
+.PHONY: help check install render export preview clean
 
 NODE           := node
 PNPM           := pnpm
@@ -13,6 +13,7 @@ help:
 	@echo "  make check    检查 Node、pnpm 与 VuePress 环境"
 	@echo "  make install  安装锁定版本的前端依赖"
 	@echo "  make render   完整构建静态站点到 _site/"
+	@echo "  make export PAGE=path/to/note.md   导出自包含单页 HTML"
 	@echo "  make preview  启动本地增量预览"
 	@echo "  make clean    清理站点输出与 VuePress 缓存"
 	@echo ""
@@ -36,6 +37,10 @@ render: check
 	@test -f "$(SITE_OUTPUT)/index.html"
 	@echo ""
 	@echo "已生成 _site/index.html"
+
+export: check
+	@test -n "$(PAGE)" || { echo "请指定 PAGE，例如 make export PAGE=parallel/DeepEP.md"; exit 1; }
+	$(PNPM) run export:page -- --page "$(PAGE)" $(if $(filter 1,$(ALLOW_EXTERNAL)),--allow-external,)
 
 preview: check
 	$(PNPM) run docs:dev

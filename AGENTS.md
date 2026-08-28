@@ -26,5 +26,6 @@
 ## Validation
 
 - Run `make check`, `pnpm run docs:build`, and `git diff --check` for site changes.
+- For portable-export changes, also export a representative page with `make export PAGE=<note.md>` and verify the generated file by opening it directly.
 - Inspect the rendered target page at desktop and mobile widths, including light and dark modes when semantic colors change.
 - After validation, run `make clean` so generated output and VuePress caches are not left behind.

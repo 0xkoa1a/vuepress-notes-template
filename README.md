@@ -45,9 +45,37 @@ order: 1
 make check    # 检查 Node、pnpm、VuePress 和 Markdown 标题
 make install  # 按 pnpm-lock.yaml 安装依赖
 make render   # 完整生成 _site/index.html
+make export PAGE=parallel/DeepEP.md  # 导出单篇自包含 HTML
 make preview  # 启动本地增量预览
 make clean    # 清理 _site/ 与 VuePress 缓存
 ```
+
+## 导出单篇 HTML
+
+单篇笔记可以导出为一个可复制、可直接双击打开的 HTML 文件：
+
+```bash
+make export PAGE=parallel/DeepEP.md
+```
+
+默认输出到 `_exports/parallel/DeepEP.html`。导出器只构建指定页面，将 Vue
+运行时、组件代码、页面样式、KaTeX、Mermaid、ECharts 和本地图片全部内联，
+保留正文与右侧 Outline；站点导航、搜索、上一篇/下一篇、更新时间和暗色模式
+不会进入导出文件。文件头还会记录源 Markdown、Git commit、工作区是否有修改
+和生成时间，便于追溯来源。
+
+默认使用严格模式：如果图片、字体、iframe 或运行时代码仍依赖网络或其他本地
+文件，命令会失败，不会把不完整结果当作 portable HTML。确实要保留外部依赖时
+可以显式放宽：
+
+```bash
+make export PAGE=path/to/note.md ALLOW_EXTERNAL=1
+```
+
+普通超链接不会被抓取；指向其他站内页面的链接离线时也可能不可用，导出器会
+列出这类链接。Vue 组件本身如果通过 `fetch()` 等方式动态取数，也需要先改为
+内嵌数据，或使用上述非严格模式。由于完整 Vue 和图表运行时会一起打包，一个
+典型文件约为数 MiB；命令会打印 JavaScript、CSS 和最终 HTML 的体积。
 
 ## GitHub Pages
 

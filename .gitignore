@@ -3,6 +3,8 @@
 # VuePress dependencies, caches, and output
 node_modules/
 _site/
+_exports/
+.vuepress-export-*/
 notes/.vuepress/.cache/
 notes/.vuepress/.temp/
 pnpm-debug.log*
