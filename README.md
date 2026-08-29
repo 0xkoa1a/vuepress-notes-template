@@ -46,6 +46,7 @@ make check    # 检查 Node、pnpm、VuePress 和 Markdown 标题
 make install  # 按 pnpm-lock.yaml 安装依赖
 make render   # 完整生成 _site/index.html
 make export PAGE=parallel/DeepEP.md  # 导出单篇自包含 HTML
+make test     # 类型检查、单元测试、站点构建和 file:// 导出回归
 make preview  # 启动本地增量预览
 make clean    # 清理 _site/ 与 VuePress 缓存
 ```
@@ -64,23 +65,43 @@ make export PAGE=parallel/DeepEP.md
 不会进入导出文件。文件头还会记录源 Markdown、Git commit、工作区是否有修改
 和生成时间，便于追溯来源。
 
-默认使用严格模式：如果图片、字体、iframe 或运行时代码仍依赖网络或其他本地
-文件，命令会失败，不会把不完整结果当作 portable HTML。确实要保留外部依赖时
-可以显式放宽：
+默认使用严格模式。导出器会：
+
+1. 用语法树检查目标 Markdown 与站点 Vue/TypeScript 组件中的 `fetch`、
+   WebSocket、Worker、动态 import 等运行时依赖；
+2. 内联构建产物中的图片、字体、音视频、CSS 与 JavaScript，并审计残留 URL；
+3. 在 HTML 最前面加入离线 Content Security Policy 和运行时网络守卫。即使
+   第三方依赖中存在无法由静态分析判断的动态分支，也不会静默联网。
+
+如果能够确定的外部依赖仍然存在，严格导出会失败。确实需要联网组件时可以显式
+放宽：
 
 ```bash
 make export PAGE=path/to/note.md ALLOW_EXTERNAL=1
 ```
 
-普通超链接不会被抓取；指向其他站内页面的链接离线时也可能不可用，导出器会
-列出这类链接。Vue 组件本身如果通过 `fetch()` 等方式动态取数，也需要先改为
-内嵌数据，或使用上述非严格模式。由于完整 Vue 和图表运行时会一起打包，一个
-典型文件约为数 MiB；命令会打印 JavaScript、CSS 和最终 HTML 的体积。
+非严格模式不会加入断网 CSP/运行时守卫，并会列出允许保留的依赖。普通超链接
+不会被抓取；指向其他站内页面的链接离线时也可能不可用，导出器会单独列出。
+
+静态分析无法数学上证明任意第三方 JavaScript 的所有运行分支，因此严格模式的
+承诺是“可解析资源全部内联，并在运行时禁止外部访问”，不是仅凭扫描宣称任意
+组件绝对离线。若 Vue 组件确实需要动态取数，应把数据改为本地内嵌，或明确使用
+`ALLOW_EXTERNAL=1`。
+
+导出只启用目标页面实际使用的 Mermaid/ECharts 支持。当前模板的纯 Markdown
+示例约 1.6 MiB，同时包含 Mermaid 与 ECharts 的测试页约 6.1 MiB；实际大小取决
+于组件和资源，命令会打印 JavaScript、CSS 和最终 HTML 体积。
 
 ## GitHub Pages
 
-`.github/workflows/deploy-pages.yml` 会在推送到 `main` 后构建并部署。首次使用
-时，在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
+`.github/workflows/deploy-pages.yml` 会在推送到 `main` 后运行内容检查、
+TypeScript/Vue 类型检查、单元测试、站点构建和 Chromium `file://` 导出回归，
+全部通过后才部署。build job 只有仓库读取权限，Pages 和 OIDC 写权限只授予 deploy
+job；Actions 固定到 commit SHA。
+
+首次使用时，在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
+Dependabot 每周检查 npm 与 Actions 更新，独立的安全工作流每周运行
+`pnpm audit --audit-level=moderate`，不会因注册表的临时状态阻塞正常部署。
 
 ## 写作与呈现
 
