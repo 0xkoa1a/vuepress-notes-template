@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -5,17 +6,21 @@ import { viteBundler } from "@vuepress/bundler-vite"
 import { activeHeaderLinksPlugin } from "@vuepress/plugin-active-header-links"
 import { markdownChartPlugin } from "@vuepress/plugin-markdown-chart"
 import { markdownExtPlugin } from "@vuepress/plugin-markdown-ext"
-import { markdownMathPlugin } from "@vuepress/plugin-markdown-math"
 import { slimsearchPlugin } from "@vuepress/plugin-slimsearch"
 import { defaultTheme } from "@vuepress/theme-default"
 import { defineUserConfig } from "vuepress"
 
+import { notePagePatterns } from "./lib/content.js"
+import { katexOnlyPlugin } from "./plugins/katex.js"
 import { createSidebar } from "./plugins/sidebar.js"
 import { portableFileRouterPlugin } from "./plugins/portableExport.js"
 import { siteConfig } from "./site.config.js"
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
-const sourceDir = path.join(rootDir, "notes")
+const sourceDir = path.resolve(
+  rootDir,
+  process.env.VUEPRESS_SOURCE_DIR ?? "notes",
+)
 const isPortableExport = process.env.VUEPRESS_PORTABLE_EXPORT === "1"
 const portablePage = process.env.VUEPRESS_EXPORT_PAGE
 const portableClientConfig = path.join(
@@ -26,6 +31,20 @@ const portableClientConfig = path.join(
 if (isPortableExport && !portablePage) {
   throw new Error("VUEPRESS_EXPORT_PAGE is required for portable export")
 }
+
+const portableSource = isPortableExport
+  ? await readFile(path.join(sourceDir, portablePage as string), "utf8")
+  : ""
+const usesECharts =
+  !isPortableExport ||
+  /(?:^|\n)[ \t]{0,3}(?:\x60{3}echarts\b|:::\s*echarts\b)|<ECharts\b/u.test(
+    portableSource,
+  )
+const usesMermaid =
+  !isPortableExport ||
+  /(?:^|\n)[ \t]{0,3}\x60{3}(?:mermaid|architecture|block|c4c|class|er|gantt|git-graph|ishikawa|journey|kanban|mindmap|packet|pie|quadrant|radar|requirement|sankey|sequence|state|timeline|treeview|treemap|venn|wardley|xy)\b|<Mermaid\b/u.test(
+    portableSource,
+  )
 
 const [repositoryOwner = "", repositoryName = ""] =
   process.env.GITHUB_REPOSITORY?.split("/") ?? []
@@ -53,6 +72,15 @@ export default defineUserConfig({
   lang: siteConfig.lang,
   title: siteConfig.title,
   description: siteConfig.description,
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='12' y='6' width='40' height='52' rx='6' fill='%233b82f6'/%3E%3Cpath d='M22 22h20M22 32h20M22 42h14' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E",
+      },
+    ],
+  ],
   dest: isPortableExport
     ? process.env.VUEPRESS_EXPORT_DEST
     : path.join(rootDir, "_site"),
@@ -60,7 +88,7 @@ export default defineUserConfig({
   cache: isPortableExport ? process.env.VUEPRESS_EXPORT_CACHE : undefined,
   pagePatterns: isPortableExport
     ? [portablePage as string]
-    : ["**/*.md", "!**/README.md"],
+    : [...notePagePatterns],
   shouldPreload: isPortableExport ? false : undefined,
   shouldPrefetch: isPortableExport ? false : undefined,
   templateBuild: isPortableExport
@@ -120,11 +148,11 @@ export default defineUserConfig({
     activeHeaderLinksPlugin({
       headerLinkSelector: "a.vp-sidebar-item, a.vp-toc-link",
     }),
-    markdownMathPlugin({ type: "katex" }),
+    katexOnlyPlugin(),
     markdownExtPlugin({ tasklist: true }),
     markdownChartPlugin({
-      echarts: true,
-      mermaid: true,
+      echarts: usesECharts,
+      mermaid: usesMermaid,
     }),
     ...(isPortableExport
       ? []

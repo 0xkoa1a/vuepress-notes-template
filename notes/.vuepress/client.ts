@@ -1,6 +1,8 @@
 import { defineMermaidConfig } from "@vuepress/plugin-markdown-chart/client"
 import { defineClientConfig } from "vuepress/client"
 
+import "katex/dist/katex.min.css"
+
 defineMermaidConfig({
   flowchart: {
     curve: "linear",

@@ -1,4 +1,4 @@
-.PHONY: help check install render export preview clean
+.PHONY: help check install render export preview test clean
 
 NODE           := node
 PNPM           := pnpm
@@ -14,6 +14,7 @@ help:
 	@echo "  make install  安装锁定版本的前端依赖"
 	@echo "  make render   完整构建静态站点到 _site/"
 	@echo "  make export PAGE=path/to/note.md   导出自包含单页 HTML"
+	@echo "  make test     运行类型、单元与导出回归测试"
 	@echo "  make preview  启动本地增量预览"
 	@echo "  make clean    清理站点输出与 VuePress 缓存"
 	@echo ""
@@ -25,7 +26,7 @@ check:
 	@$(NODE) --version | sed 's/^/node /'
 	@$(PNPM) --version | sed 's/^/pnpm /'
 	@test -x "$(CURDIR)/node_modules/.bin/vuepress" || { echo "依赖未安装，请先运行 make install"; exit 1; }
-	@$(NODE) scripts/check-headings.mjs
+	@$(PNPM) run check:content
 
 install:
 	$(PNPM) install --frozen-lockfile
@@ -44,6 +45,12 @@ export: check
 
 preview: check
 	$(PNPM) run docs:dev
+
+test: check
+	$(PNPM) run typecheck
+	$(PNPM) test
+	$(PNPM) run docs:build
+	$(PNPM) run export:smoke
 
 clean:
 	@test "$(SITE_OUTPUT)" = "$(CURDIR)/_site"

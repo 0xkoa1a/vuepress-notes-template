@@ -4,6 +4,8 @@ import type { PageHeader } from "vuepress/client"
 import { ClientOnly, RouteLink, useRoute } from "vuepress/client"
 import { h, onMounted, ref, watch } from "vue"
 
+import { siteConfig } from "../../../site.config.js"
+
 const headers = useHeaders({
   selector: "#content > :where(h2, h3)",
   levels: [2, 3],
@@ -95,8 +97,8 @@ const renderHeaders = (items: PageHeader[]): ReturnType<typeof h> | null =>
 <template>
   <ClientOnly>
     <div v-if="headers.length" class="vp-toc-placeholder">
-      <aside id="toc" vp-toc aria-label="On this Page">
-        <div class="vp-toc-header">On this Page</div>
+      <aside id="toc" vp-toc :aria-label="siteConfig.outline.ariaLabel">
+        <div class="vp-toc-header">{{ siteConfig.outline.title }}</div>
         <div ref="toc" class="vp-toc-wrapper">
           <component :is="renderHeaders(headers)" />
           <div class="vp-toc-marker" :style="{ top: tocMarkerTop }" />
