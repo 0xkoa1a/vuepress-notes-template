@@ -107,3 +107,8 @@ Dependabot 每周检查 npm 与 Actions 更新，独立的安全工作流每周�
 
 Markdown 负责知识内容，Mermaid 负责简单关系，Vue 负责复杂表现和交互。
 Agent 的内容保护、组件组织与验证规则见 [AGENTS.md](./AGENTS.md)。
+
+模板附带 [clear-writing-and-visuals Skill](./clear-writing-and-visuals/SKILL.md)，
+用于规划、撰写和 Review 文档，涵盖内容取舍、语言、图示、维度和数据依赖的表达。
+使用时可请 Agent 按该 Skill 工作；也可以将整个 `clear-writing-and-visuals/`
+目录复制到 Codex 的 `~/.codex/skills/` 中复用。
